@@ -1,6 +1,6 @@
-function move = rand_m(history, column)
+function move = rand_m(~, ~)
     % Play a random move
-    n = rand(); % random number between 0 and 1
+    n = rand(); % random number in (0, 1)
     
     if n < 0.5  % when n < 0.5 play 'C'
          move = 'C';    

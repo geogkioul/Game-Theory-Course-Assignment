@@ -32,7 +32,8 @@ function [score1, score2] = play_match(player1, player2, B, T)
             case 'Usually-C'
                 move1 = usually_c(History, player2_id);
             case 'Swap'
-                move1 = swap(History, player2_id);
+                % Swap player looks at his own strategy not the opponents
+                move1 = swap(History, player1_id);
             case 'Not-forgiving-2'
                 move1 = not_forgiving2(History, player2_id);
             otherwise
@@ -58,7 +59,8 @@ function [score1, score2] = play_match(player1, player2, B, T)
             case 'Usually-C'
                 move2 = usually_c(History, player1_id);
             case 'Swap'
-                move2 = swap(History, player1_id);
+                % Swap player looks at his own strategy not the opponents
+                move2 = swap(History, player2_id);
             case 'Not-forgiving-2'
                 move2 = not_forgiving2(History, player1_id);
             otherwise

@@ -1,4 +1,4 @@
-function move = cycle_cddc(history, column)
+function move = cycle_cddc(history, ~)
     % Play repeatedly the same moves
 
     cycle = ['C', 'D', 'D' ,'C'];   % The sequence of repeated moves 

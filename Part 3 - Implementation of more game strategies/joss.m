@@ -1,7 +1,7 @@
 function move = joss(history, column)
     % Cooperate 90% of the time after a cooperation by the opponent 
     % Always defect after a defection by the opponent
-    n = rand();    % random number in [0, 1]
+    n = rand();    % random number in (0, 1)
 
     if isempty(history)
         % Play 'C' when no moves have been played

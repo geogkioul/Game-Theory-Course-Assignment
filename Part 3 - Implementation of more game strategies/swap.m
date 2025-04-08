@@ -3,8 +3,7 @@ function move = swap(history, column)
      if isempty(history)
          move = 'C';
      else
-         % Play the opposite of the last move 
-         last = history(end, 1);
+         last = history(end, column);
          if last == 'C'
              move = 'D';
          else 
