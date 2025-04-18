@@ -38,6 +38,8 @@ function [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J)
         BST{gen} = Strategies{best_strat_indx};
 
         % Population re-distribution POP(n+1)(i)=P*POP(i)accum(i)/total_points
-        POP(:, gen+1) = round(P * accum_strategy_scores / total_points);
+        % Use the pop_redistribute function to ensure total population
+        % stays the same and distribution proportions are accurate
+        POP(:, gen+1) = pop_redistribute(accum_strategy_scores / total_points, P);
     end
 end
