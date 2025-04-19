@@ -22,21 +22,21 @@ function [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J)
         P = sum(W);
        
         % Create a map for players and their strategies
-        strategy_of_player = zeros(P,1); % P players are assigned to S strategies
-        index = 1;
-        for strategy = 1:S
-            strategy_players_count = POP(strategy, gen);
-            strategy_of_player(index:index+strategy_players_count-1) = strategy;
-            index = index + strategy_players_count;
-        end 
+        strategy_of_player = [];
+        for s = 1:S
+            strategy_of_player = [strategy_of_player; repmat(s, POP(s, gen), 1)];
+        end
+        
         % Accumulate the scores achieved by players of specific strategy
         accum_strategy_scores = accumarray(strategy_of_player, scores, [S 1], @sum, 0);
         
         % Fitness is defined as the total points collected by each strategy
         FIT(:, gen) = accum_strategy_scores;
-        [~, best_strat_indx] = max(accum_strategy_scores);
-        BST{gen} = Strategies{best_strat_indx};
 
+        max_score = max(accum_strategy_scores);
+        best_strats = find(accum_strategy_scores == max_score);
+        BST{gen} = Strategies{best_strats};
+        
         % Population re-distribution POP(n+1)(i)=P*POP(i)accum(i)/total_points
         % Use the pop_redistribute function to ensure total population
         % stays the same and distribution proportions are accurate

@@ -13,18 +13,37 @@ POP0 = [0,0,0,100,100,0,0,100,0]; % Example pop0 matrix
 T = 100;
 % Define the number of generations
 J = 10;
+% Define the K parameter for imitation dynamics
+K = 10;
 % Display the strategies
 disp("Strategies used:");
 disp(Strategies(POP0 ~=0));
 % Begin the Axelrod tournaments
 % You can run each section independently
+
 %% TourTheFit
 [POP, BST, FIT] = TourTheFit(B, Strategies, POP0, T, J);
-disp("Theoretical Analysis");
-disp("Population per generation"); disp(POP);
-disp("Best strategy per generation"); disp(BST);
-disp("Strategies' fitness per generation"); disp(FIT);
-disp("--------------------------------------------------");
+disp("Fitness Dynamics - Theoretical Analysis");
+for gen = 1:J
+    fprintf('==================== Generation %d ====================\n', gen);
+    
+    % Display population
+    fprintf('Population:\n');
+    for s = 1:length(Strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    end
+
+    % Best strategies this generation
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+
+    % Display fitness for best strategies
+    fprintf('Fitness:\n');
+    for s = 1:length(Strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{s}, FIT(s, gen));
+    end
+
+    fprintf('\n');
+end
 
 % Plot population dynamics
 figure;
@@ -44,11 +63,27 @@ ylim([0, max(POP(:))*1.1]);
 
 %% TourSimFit
 [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J);
-disp("Tournament Simulation");
-disp("Population per generation"); disp(POP); 
-disp("Best strategy per generation"); disp(BST);
-disp("Strategies' fitness per generation"); disp(FIT);
-disp("--------------------------------------------------");
+disp("Fitness Dynamics - Tournament Simulation");
+for gen = 1:J
+    fprintf('==================== Generation %d ====================\n', gen);
+    
+    % Display population
+    fprintf('Population:\n');
+    for s = 1:length(Strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    end
+
+    % Best strategies this generation
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+
+    % Display fitness for best strategies
+    fprintf('Fitness:\n');
+    for s = 1:length(Strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{s}, FIT(s, gen));
+    end
+
+    fprintf('\n');
+end
 
 % Plot population dynamics
 figure;
@@ -58,6 +93,39 @@ xlabel('Generation');
 ylabel('Population');
 title('Strategy Population Over Time');
 subtitle('Fitness Dynamics - Simulation Analysis')
+legend(Strategies, 'Location', 'best');
+grid on;
+
+colormap lines;
+set(gca, 'FontSize', 12);
+ylim([0, max(POP(:))*1.1]);
+
+%% TourSimImi
+[POP, BST] = TourSimImi(B, Strategies, POP0, K, T, J);
+disp("Imitation Dynamics - Tournament Simulation");
+for gen = 1:J
+    fprintf('==================== Generation %d ====================\n', gen);
+    
+    % Display population
+    fprintf('Population:\n');
+    for s = 1:length(Strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    end
+
+    % Best strategies this generation
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+
+    fprintf('\n');
+end
+
+% Plot population dynamics
+figure;
+plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+
+xlabel('Generation');
+ylabel('Population');
+title('Strategy Population Over Time');
+subtitle('Imitation Dynamics - Simulation Analysis')
 legend(Strategies, 'Location', 'best');
 grid on;
 
