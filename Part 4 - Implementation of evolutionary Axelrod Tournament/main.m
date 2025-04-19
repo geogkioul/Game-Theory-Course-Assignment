@@ -8,14 +8,14 @@ B = [3, 0; 5, 1];
 % Define the strategies matrix - This needs to stay constant
 Strategies = {'All-C', 'All-D', 'TitForTat', '(CD)*', '(DDC)*', '(CCD)*', '(CCCCD)*', 'Soft-Majo', 'Prober'};
 % Define the population matrix
-POP0 = 10*ones(length(Strategies), 1); % Example pop0 matrix
+POP0 = [0,0,0,100,100,0,0,100,0]; % Example pop0 matrix
 % Define the rounds of each match
-T = 50;
+T = 100;
 % Define the number of generations
-J = 50;
+J = 10;
 % Display the strategies
 disp("Strategies used:");
-disp(Strategies);
+disp(Strategies(POP0 ~=0));
 % Begin the Axelrod tournaments
 % You can run each section independently
 %% TourTheFit
@@ -26,6 +26,22 @@ disp("Best strategy per generation"); disp(BST);
 disp("Strategies' fitness per generation"); disp(FIT);
 disp("--------------------------------------------------");
 
+% Plot population dynamics
+figure;
+plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+
+xlabel('Generation');
+ylabel('Population');
+title('Strategy Population Over Time');
+subtitle('Fitness Dynamics - Theoretical Analysis');
+legend(Strategies, 'Location', 'best');
+grid on;
+
+colormap lines;
+set(gca, 'FontSize', 12);
+ylim([0, max(POP(:))*1.1]);
+
+
 %% TourSimFit
 [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J);
 disp("Tournament Simulation");
@@ -33,3 +49,18 @@ disp("Population per generation"); disp(POP);
 disp("Best strategy per generation"); disp(BST);
 disp("Strategies' fitness per generation"); disp(FIT);
 disp("--------------------------------------------------");
+
+% Plot population dynamics
+figure;
+plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+
+xlabel('Generation');
+ylabel('Population');
+title('Strategy Population Over Time');
+subtitle('Fitness Dynamics - Simulation Analysis')
+legend(Strategies, 'Location', 'best');
+grid on;
+
+colormap lines;
+set(gca, 'FontSize', 12);
+ylim([0, max(POP(:))*1.1]);

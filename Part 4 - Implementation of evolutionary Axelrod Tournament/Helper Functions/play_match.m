@@ -15,9 +15,9 @@ function [score1, score2] = play_match(player1, player2, B, T)
         % Determine the moves for each player
 
         % For player 1
-        move1 = get_strategy_move(player1, history, player1_id);
+        move1 = get_strategy_move(player1, history, player2_id);
         % For player 2
-        move2 = get_strategy_move(player2, history, player2_id); 
+        move2 = get_strategy_move(player2, history, player1_id); 
 
         % Update scores based on the payoff matrix B
         % The payoff matrix of col player is the transpose of B

@@ -62,11 +62,9 @@ function [POP, BST, FIT] = TourTheFit(B, Strategies, POP0, T, J)
             
             % Subtract the score he got from playing himself V(i|i)
             g(player) = g(player) - V(player, player);
-            
-            % Total points = sum( W(i)*g(i) ) for every player i
-            total_points = total_points + g(player) * W(player);
         end
-
+        % Total points = sum( W(i)*g(i) ) for every player i
+        total_points = sum(W .* g);
         % Fitness is defined as the points collected by each strategy
         FIT(:, gen) = g;
         [~, best_strat_indx] = max(g);
@@ -74,8 +72,7 @@ function [POP, BST, FIT] = TourTheFit(B, Strategies, POP0, T, J)
         
         % Population re-distribution W(n+1)(i)=P*Wn(i)g(i)/total_points
         POP(:, gen+1) = P * (W .* g) / total_points;
-        % A threshold to avoid seeing negative values by decimal
-        % representation inaccuracies
-        POP(POP < 0) = 0; 
+        % Make negative values from representation errors equal to zero
+        POP(POP < 0) = 0;
     end
 end
