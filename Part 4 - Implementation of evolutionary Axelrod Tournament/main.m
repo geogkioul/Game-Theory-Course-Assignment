@@ -12,7 +12,7 @@ POP0 = [0,0,0,100,100,0,0,100,0]; % Example pop0 matrix
 % Define the rounds of each match
 T = 100;
 % Define the number of generations
-J = 10;
+J = 90;
 % Define the K parameter for imitation dynamics
 K = 10;
 % Display the strategies
@@ -60,7 +60,6 @@ colormap lines;
 set(gca, 'FontSize', 12);
 ylim([0, max(POP(:))*1.1]);
 
-
 %% TourSimFit
 [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J);
 disp("Fitness Dynamics - Tournament Simulation");
@@ -83,6 +82,9 @@ for gen = 1:J
     end
 
     fprintf('\n');
+
+    ComputePayoffMatrix(Strategies(POP0 ~=0), B, T)
+    
 end
 
 % Plot population dynamics
@@ -132,3 +134,15 @@ grid on;
 colormap lines;
 set(gca, 'FontSize', 12);
 ylim([0, max(POP(:))*1.1]);
+
+%% TourTheImi
+
+POP0 = [0,0,0,1,1,0,0,1,0]; % N=sum(POP0)--> here N=3
+K = 1;
+
+P = TourTheImi(B, Strategies, POP0, K, T, J);
+
+% Print Transition Matrix
+disp('Transition Matrix P:');
+disp(P);
+
