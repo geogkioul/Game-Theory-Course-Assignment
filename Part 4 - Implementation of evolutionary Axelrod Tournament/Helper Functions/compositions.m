@@ -1,5 +1,5 @@
 function comps = compositions(n, k)
-    % Returns all possible compinations of number n as k non negative numbers 
+    % Returns all possible compositions of number n as k non negative numbers 
     if k == 1
         comps = n;
     else

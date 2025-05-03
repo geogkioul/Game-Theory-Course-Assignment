@@ -57,7 +57,7 @@ function [POP, BST, FIT] = TourTheFit(B, Strategies, POP0, T, J)
                     continue;
                 end
                 % g(i) = sum(W(i)V(i|j)) for every player j
-                g(player) = g(player) + W(player) * V(player, opponent);
+                g(player) = g(player) + W(opponent) * V(player, opponent);
             end
             
             % Subtract the score he got from playing himself V(i|i)

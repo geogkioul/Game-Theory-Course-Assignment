@@ -1,6 +1,7 @@
 function [POP, BST] = TourSimImi(B, Strategies, POP0, K, T, J)
     % Define the number of strategies
     S = length(Strategies);
+    h = waitbar(0, 'Simulation is running...');
 
     % Initialize storage space
     % A row for each strategy, a column for each generation
@@ -48,5 +49,7 @@ function [POP, BST] = TourSimImi(B, Strategies, POP0, K, T, J)
         % Update population synthesis for next generation
         strategy_of_player = new_strategies;
         POP(:, gen+1) = accumarray(new_strategies, 1, [S 1], @sum, 0);
+        waitbar(gen/J, h);
     end
+    close(h);
 end

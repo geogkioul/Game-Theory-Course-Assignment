@@ -2,7 +2,7 @@
 function [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J)
     % Define the number of strategies
     S = length(Strategies);
-
+    h = waitbar(0, 'Simulation is running...');
     % Initialize storage space
     % A row for each strategy, a column for each generation
     POP = zeros(S, J+1); % +1 to account for POP0 too
@@ -34,12 +34,14 @@ function [POP, BST, FIT] = TourSimFit(B, Strategies, POP0, T, J)
         FIT(:, gen) = accum_strategy_scores;
 
         max_score = max(accum_strategy_scores);
-        best_strats = find(accum_strategy_scores == max_score);
+        best_strats = accum_strategy_scores == max_score;
         BST{gen} = Strategies{best_strats};
         
         % Population re-distribution POP(n+1)(i)=P*POP(i)accum(i)/total_points
         % Use the pop_redistribute function to ensure total population
         % stays the same and distribution proportions are accurate
         POP(:, gen+1) = pop_redistribute(accum_strategy_scores / total_points, P);
+        waitbar(gen/J, h);
     end
+    close(h);
 end

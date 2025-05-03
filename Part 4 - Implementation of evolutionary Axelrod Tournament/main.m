@@ -8,16 +8,19 @@ B = [3, 0; 5, 1];
 % Define the strategies matrix - This needs to stay constant
 Strategies = {'All-C', 'All-D', 'TitForTat', '(CD)*', '(DDC)*', '(CCD)*', '(CCCCD)*', 'Soft-Majo', 'Prober'};
 % Define the population matrix
-POP0 = [0,0,0,100,100,0,0,100,0]; % Example pop0 matrix
+%       AllC  AllD  TFT  CD*  DDC*    CCD* CCCCD*  SM   PROB
+POP0 = [0   ,   0,    0,  0,  200,    300,    0,  100,    0]; % Example pop0 matrix
 % Define the rounds of each match
-T = 100;
+T = 1000;
 % Define the number of generations
-J = 90;
+J = 100;
 % Define the K parameter for imitation dynamics
 K = 10;
 % Display the strategies
 disp("Strategies used:");
-disp(Strategies(POP0 ~=0));
+active_strategies = Strategies(POP0 ~= 0);
+active_strategies_indexes = find(POP0 ~= 0);
+disp(active_strategies);
 % Begin the Axelrod tournaments
 % You can run each section independently
 
@@ -29,17 +32,17 @@ for gen = 1:J
     
     % Display population
     fprintf('Population:\n');
-    for s = 1:length(Strategies)
-        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    for s = 1:length(active_strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{active_strategies_indexes(s)}, POP(active_strategies_indexes(s), gen));
     end
 
     % Best strategies this generation
-    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(gen)), ', '));
 
     % Display fitness for best strategies
     fprintf('Fitness:\n');
-    for s = 1:length(Strategies)
-        fprintf('  %-12s : %.3f\n', Strategies{s}, FIT(s, gen));
+    for s = 1:length(active_strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{active_strategies_indexes(s)}, FIT(active_strategies_indexes(s), gen));
     end
 
     fprintf('\n');
@@ -47,13 +50,13 @@ end
 
 % Plot population dynamics
 figure;
-plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+plot(0:size(POP,2)-1, POP(active_strategies_indexes, :)', 'LineWidth', 2);
 
 xlabel('Generation');
 ylabel('Population');
 title('Strategy Population Over Time');
 subtitle('Fitness Dynamics - Theoretical Analysis');
-legend(Strategies, 'Location', 'best');
+legend(active_strategies, 'Location', 'bestoutside');
 grid on;
 
 colormap lines;
@@ -68,34 +71,31 @@ for gen = 1:J
     
     % Display population
     fprintf('Population:\n');
-    for s = 1:length(Strategies)
-        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    for s = 1:length(active_strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{active_strategies_indexes(s)}, POP(active_strategies_indexes(s), gen));
     end
 
     % Best strategies this generation
-    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(gen)), ', '));
 
     % Display fitness for best strategies
     fprintf('Fitness:\n');
-    for s = 1:length(Strategies)
-        fprintf('  %-12s : %.3f\n', Strategies{s}, FIT(s, gen));
+    for s = 1:length(active_strategies_indexes)
+        fprintf('  %-12s : %.3f\n', Strategies{active_strategies_indexes(s)}, FIT(active_strategies_indexes(s), gen));
     end
 
-    fprintf('\n');
-
-    ComputePayoffMatrix(Strategies(POP0 ~=0), B, T)
-    
+    fprintf('\n');   
 end
 
 % Plot population dynamics
 figure;
-plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+plot(0:size(POP,2)-1, POP(active_strategies_indexes, :)', 'LineWidth', 2);
 
 xlabel('Generation');
 ylabel('Population');
 title('Strategy Population Over Time');
 subtitle('Fitness Dynamics - Simulation Analysis')
-legend(Strategies, 'Location', 'best');
+legend(active_strategies, 'Location', 'bestoutside');
 grid on;
 
 colormap lines;
@@ -110,25 +110,25 @@ for gen = 1:J
     
     % Display population
     fprintf('Population:\n');
-    for s = 1:length(Strategies)
-        fprintf('  %-12s : %.3f\n', Strategies{s}, POP(s, gen));
+    for s = 1:length(active_strategies)
+        fprintf('  %-12s : %.3f\n', Strategies{active_strategies_indexes(s)}, POP(active_strategies_indexes(s), gen));
     end
 
     % Best strategies this generation
-    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(s)), ', '));
+    fprintf('Best strategy/strategies: %s\n', strjoin(string(BST(gen)), ', '));
 
     fprintf('\n');
 end
 
 % Plot population dynamics
 figure;
-plot(0:size(POP,2)-1, POP', 'LineWidth', 2);
+plot(0:size(POP,2)-1, POP(active_strategies_indexes, :)', 'LineWidth', 2);
 
 xlabel('Generation');
 ylabel('Population');
 title('Strategy Population Over Time');
 subtitle('Imitation Dynamics - Simulation Analysis')
-legend(Strategies, 'Location', 'best');
+legend(active_strategies, 'Location', 'bestoutside');
 grid on;
 
 colormap lines;
@@ -137,12 +137,64 @@ ylim([0, max(POP(:))*1.1]);
 
 %% TourTheImi
 
-POP0 = [0,0,0,1,1,0,0,1,0]; % N=sum(POP0)--> here N=3
+% You can tune the following parameters
+POP0 = [0,0,0,2,2,0,0,2,0];
 K = 1;
 
-P = TourTheImi(B, Strategies, POP0, K, T, J);
 
-% Print Transition Matrix
-disp('Transition Matrix P:');
-disp(P);
+N = sum(POP0);
+M = nnz(POP0);
 
+% Find the markov chain transition probability matrix
+P = test_TourTheImi(B, Strategies, POP0, K, T, J);
+
+% Print Transition Matrix and number of states
+states = compositions(N, M);
+S = size(states, 1);
+% Final cell array for transition matrix (1 extra for state headers)
+C = cell(S+1, S+1);         
+
+% Set top-left label
+C{1,1} = 'Current\Next';
+
+% Set column headers: "State 1", "State 2", ...
+for j = 1:S
+    C{1,j+1} = sprintf('State %d', j);
+end
+
+% Set row headers and fill matrix
+for i = 1:S
+    C{i+1,1} = sprintf('State %d', i);
+    for j = 1:S
+        C{i+1,j+1} = P(i,j);
+    end
+end
+
+if(isfile('./Additional Files/transition_matrix.xlsx'))
+    delete('./Additional Files/transition_matrix.xlsx');
+end
+writecell(C, './Additional Files/transition_matrix.xlsx');
+
+% Final cell array for states matrix (1 extra for state headers)
+ST = cell(S+1, M+1);
+% Set top-left label
+ST{1,1} = 'State\Strategy';
+
+% Set column headers: "Strategy name"
+ST(1, 2:end) = active_strategies;
+
+% Fill rows
+for i = 1:S
+    ST{i+1, 1} = sprintf("State %d", i);
+    for j = 1:M
+        ST{i+1, j+1} = states(i, j);
+    end
+end
+
+if(isfile('./Additional Files/state_matrix.xlsx'))
+    delete('./Additional Files/state_matrix.xlsx');
+end
+writecell(ST, './Additional Files/state_matrix.xlsx');
+
+disp("Both transition probabilities matrix and states matrix were saved as Excel files on ./Additional Files folder");
+disp("**NOTE**: The Excel files cannot be overwritten if they are open, close them and run the script again to rewrite.");

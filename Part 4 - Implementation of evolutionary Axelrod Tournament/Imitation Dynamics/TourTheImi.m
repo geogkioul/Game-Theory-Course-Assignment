@@ -3,26 +3,14 @@ function P = TourTheImi(B, Strategies, POP0, K, T, J)
     N = sum(POP0);                       % Number of total players
     M = length(Strategies(POP0 ~=0));    % Number of used Strategies (M=3)
     
-    % Compute the payoff matrix of used strategies
+    % Compute the payoff matrix of active strategies
     V_total = ComputePayoffMatrix(Strategies, B, T);
-    active_strategies= find(POP0 > 0);  % Keep only the values of used strategies
+    active_strategies= find(POP0 > 0);  % Keep only the values of active strategies
     V = V_total(active_strategies, active_strategies);
     
-    disp('Payoff Matrix:')
-    disp(V);
-
     % Calculation of possible states (numbers of players per strategy)
-    % state = (x1, x2, x3)
-    states = [];
-    for i = 0:N
-        for j = 0:(N - i)
-            k = N - i - j;
-            states = [states; i, j, k];     % Matrix of states -> SxM
-        end
-    end
-
-    disp('States:');
-    disp(states);
+    % state = (x1, x2, ..., xM)
+    states = compositions(N, M);
     
     % Initiallisation
     S = size(states, 1);  % Number of possible states
@@ -31,10 +19,7 @@ function P = TourTheImi(B, Strategies, POP0, K, T, J)
     
     % Transition Matrix Calculation
     for s = 1:S
-        current_state = states(s, :);    % Current state -> (x1, x2, x3)
-
-        disp('State:');
-        disp(current_state);
+        current_state = states(s, :);    % Current state
 
         g = zeros(M, 1);      % Total points per strategy in every state
 
