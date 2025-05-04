@@ -1,129 +1,99 @@
 function P = TourTheImi(B, Strategies, POP0, K, T, J)
-
-    N = sum(POP0);                       % Number of total players
-    M = length(Strategies(POP0 ~=0));    % Number of used Strategies (M=3)
+    N = sum(POP0);
+    M = length(Strategies(POP0 ~= 0)); % M: number of active strategies
     
     % Compute the payoff matrix of active strategies
     V_total = ComputePayoffMatrix(Strategies, B, T);
     active_strategies= find(POP0 > 0);  % Keep only the values of active strategies
     V = V_total(active_strategies, active_strategies);
-    
-    % Calculation of possible states (numbers of players per strategy)
-    % state = (x1, x2, ..., xM)
+
+    % STEP 1 - Calculate all possible states
     states = compositions(N, M);
-    
-    % Initiallisation
-    S = size(states, 1);  % Number of possible states
-    P = zeros(S, S);      % Transition Matrix
-    f = zeros(M, S);      % Fitness for every strategy and state
-    
-    % Transition Matrix Calculation
-    for s = 1:S
-        current_state = states(s, :);    % Current state
+    S = size(states, 1);
+    % Initialize transition probabilities matrix with zeros
+    P = zeros(S, S);
 
-        g = zeros(M, 1);      % Total points per strategy in every state
-
-        % Fitness Calculation for every strategy
-        for player = 1:M
-            total_payoff = 0;
-            for opponent = 1:M
-                if(current_state(player) > 0 && current_state(opponent) > 0)
-                    % When both player and oponnent strategy have players
-                    if player == opponent
-                        interactions = current_state(opponent) - 1;  % exclude self
-                    else
-                        interactions = current_state(opponent);
-                    end
-                    total_payoff = total_payoff + V(player, opponent) * interactions;
-                end
-            end
-            g(player) = total_payoff;
-        end
-        % Set fitness per strategy
-        f(:, s) = g / (N-1);    
-
-        % Total points -> sum(f(i).*x(i)), for every strategy i
-        total_points = dot(f(:, s), current_state);
-
-        disp('Total points:');
-        disp(total_points);
-        
-        % Find best strategy index
-        max_score = max(f(:, s));
-        best_strat = find(f(:, s) == max_score);
-
-        disp('Max score:');
-        disp(max_score);
-        disp('Best strategy:');
-        disp(best_strat);
-        disp('Fitness for every strategy:');
-        disp(f(:, s));
-     
-        % When opponent strategies have zero players, they can not 
-        % increase their players, so we remain at the same state-> prob = 1
-        if total_points == 0
-            P(s, s) = 1;
+    % STEP 2 - Find the best/non-best strategies for each state
+    for state = 1:S
+        current_state_vector = states(state, :); % get the whole row
+        % If the current state has only one non-zero population strategy
+        % then it is an absorbing state since then can be no imitators to
+        % change strategy
+        if nnz(current_state_vector) == 1
+            P(state, state) = 1;
             continue;
         end
-        
-        % Transition Matrix Calculation
 
-        % Find all possible combinations of K players that should be removed
-        other_strats = setdiff(1:M, best_strat);
-        all_combinations = compositions(K, length(other_strats));
+        % Now find the total payoff collected by each strategy in the
+        % current state
+        % Initialize with zeros
+        strategy_payoffs = zeros(M, 1);
 
-        disp('Possible changes');
-        disp(all_combinations);
-        
-        % For every new state combination
-        for c = 1:size(all_combinations, 1)
-            % get one change vector eg. for K=2 [0,2]
-            change_vec = all_combinations(c, :);    
-            valid = true;  
-        
-            % Check if there are enough players for this change
-            for idx = 1:length(other_strats)
-                if current_state(other_strats(idx)) < change_vec(idx)   
-                    % Invalid state when there are less players than 
-                    % the ones that should be removed
-                    valid = false;
-                    break;
+        for player = 1:M
+            total_strategy_payoff = 0;
+            for opponent = 1:M
+                % If both strategies have non-zero players
+                if (current_state_vector(player) > 0 && current_state_vector(opponent) > 0)
+                    % Each player of each strategy plays current_state_vector(opponent) games with the opponent
+                    if player == opponent % if playing players from the same strategy
+                        matches_played = current_state_vector(player) * (current_state_vector(opponent)-1); % -1 to exclude self
+                    else
+                        matches_played = current_state_vector(player) * current_state_vector(opponent);
+                    end
+                    % Update total_strategy_payoff
+                    total_strategy_payoff = total_strategy_payoff + V(player, opponent)*matches_played;
                 end
             end
-            if ~valid
-                % When the change vector is invalid move to the next vector
+            % Save the total payoff gained by this strategy
+            strategy_payoffs(player) = total_strategy_payoff;
+        end
+
+        % Find the best strategy based on total strategy payoff
+        max_payoff = max(strategy_payoffs);
+        best_strats = find(strategy_payoffs == max_payoff); % Could be more than one
+        non_best_strats = setdiff(1:M, best_strats);
+        % If there is no sufficient amount of non-best-strat players reduce
+        % number of imitators K to a feasible value
+        K_actual = min(K, sum(current_state_vector(non_best_strats)));
+        
+        % STEP 3 - Calculate the difference between the current state and
+        % every candidate new one
+        for new_state = 1:S
+            new_state_vector = states(new_state, :);
+            difference_vector = new_state_vector - current_state_vector;
+            % Positive entries are gains (should only be in best strats)
+            % Negative entries are losses (should only be in non-best
+            % strats)
+            
+            % Find how many players joined each best strategy
+            G = difference_vector(best_strats);
+            % Find how many players left a non-best strategy
+            L = -difference_vector(non_best_strats);
+
+            % Check if the transition from current to new state is valid
+            % The sum of both gains and losses should be K
+            % Both gains and losses should only have non-negative entries
+            if any(G < 0) || any(L < 0) || sum(G) ~= K_actual || sum(L) ~= K_actual
+                P(state, new_state) = 0; % If transition is not valid then assign a 0 prob
                 continue;
             end
-        
-            % New state initiallisation
-            new_state = current_state;
-            % Add the K new players to the best strategy
-            new_state(best_strat) = new_state(best_strat) + K;
 
-            % Remove the players from the other strategies
-            for idx = 1:length(other_strats)
-                new_state(other_strats(idx)) = new_state(other_strats(idx)) - change_vec(idx);
-            end
-        
-            % Find new state index
-            [~, next_s] = ismember(new_state, states, 'rows');
-        
-            % Probabilities Calculation
-            prob = 1;
-            for idx = 1:length(other_strats)
-                str = other_strats(idx);    % index of strategy mapping to the current state
-                prob = prob * (current_state(str) / N)^change_vec(idx);
-            end
-            prob = prob * (f(best_strat, s) / total_points)^K;
-        
-            % Update Transition Matrix
-            P(s, next_s) = P(s, next_s) + prob;
+            % STEP 4 - Calculate the probability of a valid transition
+
+            % Hypergeometric probability of selecting K players from
+            % non-best strategies (sampling without replacement)
+            p_select = hypergeometric_pmf(L, current_state_vector(non_best_strats));
+            
+            % Multinomial probability of redistributing K players to best
+            % strategies
+            p_assign = multinomial_pmf(G, ones(1, length(best_strats)) / length(best_strats));
+
+            % The probability of the transition is 
+            % Pr(state -> new_state) =
+            % p_select * p_assign
+            % We multiply them because the selection of K from non-best is
+            % independent from their assignment to best
+            P(state, new_state) = p_select * p_assign;
         end
-        
-        % Ensure the probabilities sum (row sum) = 1
-        P(s, s) = 1 - sum(P(s, :));
-
-        disp('Updated transition matrix P:');
-        disp(P);
     end
 end

@@ -1,4 +1,10 @@
 % Main script from which the Tournament functions are called
+
+
+
+% *** THERE IS A DIFFERENT SECTION FOR EACH OF THE FOUR FUNCTIONS ***
+
+
 % You can tune the B, POP0, T and J parameters below
 % Add the current folder and all its subfolders to the MATLAB path
 addpath(genpath(pwd));
@@ -9,13 +15,13 @@ B = [3, 0; 5, 1];
 Strategies = {'All-C', 'All-D', 'TitForTat', '(CD)*', '(DDC)*', '(CCD)*', '(CCCCD)*', 'Soft-Majo', 'Prober'};
 % Define the population matrix
 %       AllC  AllD  TFT  CD*  DDC*    CCD* CCCCD*  SM   PROB
-POP0 = [0   ,   0,    0,  0,  200,    300,    0,  100,    0]; % Example pop0 matrix
+POP0 = [0   ,   0,    0,  0,  200,    300,    0,  100,    800]; % Example pop0 matrix
 % Define the rounds of each match
 T = 1000;
 % Define the number of generations
-J = 100;
+J = 200;
 % Define the K parameter for imitation dynamics
-K = 10;
+K = 3;
 % Display the strategies
 disp("Strategies used:");
 active_strategies = Strategies(POP0 ~= 0);
@@ -138,15 +144,21 @@ ylim([0, max(POP(:))*1.1]);
 %% TourTheImi
 
 % You can tune the following parameters
-POP0 = [0,0,0,2,2,0,0,2,0];
-K = 1;
+POP0 = [0,0,0,0,6,9,0,3,0];
+K = 3;
+
+% Display the strategies
+disp("Strategies used:");
+active_strategies = Strategies(POP0 ~= 0);
+active_strategies_indexes = find(POP0 ~= 0);
+disp(active_strategies);
 
 
 N = sum(POP0);
 M = nnz(POP0);
 
 % Find the markov chain transition probability matrix
-P = test_TourTheImi(B, Strategies, POP0, K, T, J);
+P = TourTheImi(B, Strategies, POP0, K, T, J);
 
 % Print Transition Matrix and number of states
 states = compositions(N, M);
@@ -198,3 +210,25 @@ writecell(ST, './Additional Files/state_matrix.xlsx');
 
 disp("Both transition probabilities matrix and states matrix were saved as Excel files on ./Additional Files folder");
 disp("**NOTE**: The Excel files cannot be overwritten if they are open, close them and run the script again to rewrite.");
+fprintf('\n\n');
+
+% If we want to find the expected population after J generations
+% First we find the J-step transition matrix
+multistep_transition_matrix = P^J;
+% Then we find the current state from the given population
+initial_state = find(all(bsxfun(@eq, states, POP0(active_strategies_indexes)), 2));
+% And finally calculate the population after J steps
+final_population = zeros(1, length(active_strategies_indexes));
+for j = 1:S
+    if multistep_transition_matrix(initial_state, j) == 0
+        continue;
+    else
+        final_population = final_population + multistep_transition_matrix(initial_state, j)*states(j, :);
+    end
+end
+fprintf('After %d generations, the expected population synthesis is the following:\n\n', J);
+
+% Display population
+for s = 1:length(active_strategies)
+    fprintf('  %-12s : %.3f\n', active_strategies{s}, final_population(s));
+end
