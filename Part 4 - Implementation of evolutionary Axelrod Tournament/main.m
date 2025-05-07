@@ -15,7 +15,7 @@ B = [3, 0; 5, 1];
 Strategies = {'All-C', 'All-D', 'TitForTat', '(CD)*', '(DDC)*', '(CCD)*', '(CCCCD)*', 'Soft-Majo', 'Prober'};
 % Define the population matrix
 %       AllC  AllD  TFT  CD*  DDC*    CCD* CCCCD*  SM   PROB
-POP0 = [0   ,   0,    0,  0,  200,    300,    0,  100,    800]; % Example pop0 matrix
+POP0 = [0   ,   0,    0,  0,  200,    300,    0,  100,    0]; % Example pop0 matrix
 % Define the rounds of each match
 T = 1000;
 % Define the number of generations
