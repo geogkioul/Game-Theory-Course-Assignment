@@ -19,6 +19,8 @@ function move = get_strategy_move(player_strategy, history, player_id)
                 move = soft_majo(history, player_id);
             case 'Prober'
                 move = prober(history, player_id);
+            case 'Gradual'
+                move = gradual(history, player_id);
             otherwise
                 error('Uknown strategy');
     end
