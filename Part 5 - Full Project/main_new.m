@@ -1,7 +1,8 @@
 % Main script from which all examples will be run
+
+% !!! RUN THIS SECTION FIRST !!!
+% Set path
 addpath(genpath(pwd));
-% Define the strategies matrix - This needs to stay constant
-Strategies = {'All-C', 'All-D', 'TitForTat', '(CD)*', '(DDC)*', '(CCD)*', '(CCCCD)*', 'Soft-Majo', 'Prober', 'Gradual'};
 
 % ------------------ FITNESS DYNAMICS ----------------------%
 %                                                           %
@@ -44,3 +45,33 @@ example11b;
 example12a;
 %%
 example12b;
+%%
+% ------------------ IMITATION DYNAMICS --------------------%
+%                                                           %
+%                                                           %
+% ----------------------------------------------------------%
+
+%%
+example13;
+%%
+example14;
+%%
+example15;
+%%
+example16;
+%%
+example17;
+%%
+example18;
+%%
+example19;
+%%
+example20;
+%%
+example21;
+%%
+example22;
+%%
+example23;
+%%
+example24;
